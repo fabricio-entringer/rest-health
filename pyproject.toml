@@ -43,6 +43,10 @@ dev = [
     "black",
     "flake8",
     "mypy",
+    "build>=0.10",
+    "fastapi",
+    "pydantic", 
+    "flask",
 ]
 
 [tool.setuptools.packages.find]
