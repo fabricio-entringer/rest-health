@@ -1,7 +1,7 @@
 # rest-health
 
 <div align="center">
-  <img src="./assets/rest-health-logo.png" alt="rest-health logo" width="200">
+  <img src="https://raw.githubusercontent.com/fabricio-entringer/rest-health/master/assets/rest-health-logo.png" alt="rest-health logo" width="200">
 </div>
 
 **Framework-agnostic REST healthcheck endpoints for Python web apps**
