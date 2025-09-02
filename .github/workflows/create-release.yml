@@ -1,0 +1,179 @@
+name: Create GitHub Release
+
+on:
+  workflow_run:
+    workflows: ["Build and Publish to PyPI"]
+    types:
+      - completed
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master' }}
+    
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for changelog generation
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Get package version
+      id: get_version
+      run: |
+        pip install tomli
+        python -c "
+        import tomli
+        with open('pyproject.toml', 'rb') as f:
+            data = tomli.load(f)
+        version = data['project']['version']
+        print(f'version={version}')
+        print(f'tag=v{version}')
+        " >> $GITHUB_OUTPUT
+
+    - name: Check if release already exists
+      id: check_release
+      run: |
+        if gh release view ${{ steps.get_version.outputs.tag }} >/dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Release ${{ steps.get_version.outputs.tag }} already exists"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "Release ${{ steps.get_version.outputs.tag }} does not exist"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get last release tag
+      id: last_release
+      if: steps.check_release.outputs.exists == 'false'
+      run: |
+        last_tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+        if [ -z "$last_tag" ]; then
+          # If no previous releases, get the first commit
+          last_tag=$(git rev-list --max-parents=0 HEAD)
+        fi
+        echo "last_tag=$last_tag" >> $GITHUB_OUTPUT
+        echo "Last release tag: $last_tag"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Generate release notes
+      id: release_notes
+      if: steps.check_release.outputs.exists == 'false'
+      run: |
+        # Create release notes file
+        cat > release_notes.md << 'EOF'
+        ## 🚀 What's New in v${{ steps.get_version.outputs.version }}
+        
+        EOF
+        
+        # Get commits since last release
+        if [ "${{ steps.last_release.outputs.last_tag }}" != "" ]; then
+          commits_range="${{ steps.last_release.outputs.last_tag }}..HEAD"
+        else
+          commits_range="HEAD"
+        fi
+        
+        # Extract features, fixes, and other changes
+        echo "### ✨ New Features" >> release_notes.md
+        git log $commits_range --grep="feat\|feature" --pretty=format:"- %s" --no-merges | head -20 >> release_notes.md || echo "- No new features in this release" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        echo "### 🐛 Bug Fixes" >> release_notes.md
+        git log $commits_range --grep="fix\|bug" --pretty=format:"- %s" --no-merges | head -20 >> release_notes.md || echo "- No bug fixes in this release" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        echo "### 🔧 Improvements & Refactoring" >> release_notes.md
+        git log $commits_range --grep="refactor\|improve\|perf\|optimize" --pretty=format:"- %s" --no-merges | head -10 >> release_notes.md || echo "- No improvements in this release" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        echo "### 📚 Documentation" >> release_notes.md
+        git log $commits_range --grep="docs\|doc\|readme" --pretty=format:"- %s" --no-merges | head -10 >> release_notes.md || echo "- No documentation changes in this release" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        echo "### 🔄 Other Changes" >> release_notes.md
+        git log $commits_range --pretty=format:"- %s" --no-merges | grep -v -E "(feat|feature|fix|bug|refactor|improve|perf|optimize|docs|doc|readme)" | head -10 >> release_notes.md || echo "- No other notable changes" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        # Add installation instructions
+        cat >> release_notes.md << 'EOF'
+        ## 📦 Installation
+        
+        Install the latest version using pip:
+        ```bash
+        pip install rest-health==${{ steps.get_version.outputs.version }}
+        ```
+        
+        Or upgrade from a previous version:
+        ```bash
+        pip install --upgrade rest-health
+        ```
+        
+        ## 🔗 Links
+        
+        - 📋 [PyPI Package](https://pypi.org/project/rest-health/${{ steps.get_version.outputs.version }}/)
+        - 📖 [Documentation](https://github.com/fabricio-entringer/rest-health#readme)
+        - 🐛 [Report Issues](https://github.com/fabricio-entringer/rest-health/issues)
+        
+        ## 📈 Stats
+        
+        EOF
+        
+        # Add commit stats
+        total_commits=$(git log $commits_range --oneline | wc -l)
+        contributors=$(git log $commits_range --pretty=format:"%an" | sort | uniq | wc -l)
+        files_changed=$(git diff --name-only ${{ steps.last_release.outputs.last_tag }}..HEAD 2>/dev/null | wc -l || echo "N/A")
+        
+        echo "- **$total_commits** commits" >> release_notes.md
+        echo "- **$contributors** contributors" >> release_notes.md
+        echo "- **$files_changed** files changed" >> release_notes.md
+        echo -e "\n" >> release_notes.md
+        
+        # Add contributors
+        echo "## 👥 Contributors" >> release_notes.md
+        echo -e "\nThanks to all contributors who made this release possible:\n" >> release_notes.md
+        git log $commits_range --pretty=format:"- @%an" | sort | uniq >> release_notes.md
+        
+        # Clean up empty sections
+        sed -i '/^- No /d' release_notes.md
+        sed -i '/^###.*/{N;/\n$/d;}' release_notes.md
+        
+        echo "Generated release notes:"
+        cat release_notes.md
+
+    - name: Create Git Tag
+      if: steps.check_release.outputs.exists == 'false'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a ${{ steps.get_version.outputs.tag }} -m "Release version ${{ steps.get_version.outputs.version }}"
+        git push origin ${{ steps.get_version.outputs.tag }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create GitHub Release
+      if: steps.check_release.outputs.exists == 'false'
+      run: |
+        gh release create ${{ steps.get_version.outputs.tag }} \
+          --title "🎉 Release v${{ steps.get_version.outputs.version }}" \
+          --notes-file release_notes.md \
+          --latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update release with build artifacts
+      if: steps.check_release.outputs.exists == 'false'
+      run: |
+        # Note: In a real scenario, you might want to download and attach
+        # the built packages from the previous workflow run
+        echo "Release created successfully for version ${{ steps.get_version.outputs.version }}"
+        echo "PyPI package: https://pypi.org/project/rest-health/${{ steps.get_version.outputs.version }}/"
