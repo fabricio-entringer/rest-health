@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rest-health"
-version = "0.1.0"
+version = "0.1.1"
 description = "Framework-agnostic REST healthcheck endpoints for Python web apps"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -43,6 +43,10 @@ dev = [
     "black",
     "flake8",
     "mypy",
+    "build>=0.10",
+    "fastapi",
+    "pydantic", 
+    "flask",
 ]
 
 [tool.setuptools.packages.find]

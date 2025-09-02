@@ -1,0 +1,136 @@
+name: 📋 Task
+description: Create a task for project maintenance, documentation, or improvements
+title: "[TASK] "
+labels: ["task", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for creating a task! Please provide details about what needs to be done.
+
+  - type: textarea
+    id: task-description
+    attributes:
+      label: 📋 Task Description
+      description: A clear and concise description of the task to be completed.
+      placeholder: Describe what needs to be done...
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: 🎯 Objective
+      description: What is the goal or outcome of this task?
+      placeholder: What should be achieved by completing this task?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 📝 Acceptance Criteria
+      description: Define what needs to be done for this task to be considered complete
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: 🏷️ Task Type
+      description: What type of task is this?
+      options:
+        - Documentation update
+        - Code refactoring
+        - Performance improvement
+        - CI/CD enhancement
+        - Dependency update
+        - Testing improvement
+        - Code cleanup
+        - Configuration change
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: task-type-other
+    attributes:
+      label: 🔧 Other Task Type
+      description: If you selected "Other" above, please specify
+      placeholder: Specify the task type...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⏰ Priority
+      description: What is the priority of this task?
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+      default: 1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: 🎯 Components Affected
+      description: Which parts of the project does this task affect?
+      options:
+        - label: Core library
+        - label: FastAPI adapter
+        - label: Flask adapter
+        - label: Documentation
+        - label: Tests
+        - label: CI/CD
+        - label: Build system
+        - label: Dependencies
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: 💭 Implementation Notes
+      description: Any specific technical requirements, constraints, or suggestions for implementation.
+      placeholder: Technical details, requirements, or suggestions...
+
+  - type: input
+    id: related-issues
+    attributes:
+      label: 🔗 Related Issues
+      description: List any related issue numbers (e.g., #123, #456)
+      placeholder: "#123, #456"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📚 Additional Context
+      description: Provide any additional information, references, or context that would be helpful.
+      placeholder: References, links, additional context...
+
+  - type: checkboxes
+    id: definition-of-done
+    attributes:
+      label: ✅ Definition of Done
+      description: How will we know this task is complete?
+      options:
+        - label: Implementation is complete
+        - label: Tests are updated (if applicable)
+        - label: Documentation is updated (if applicable)
+        - label: Code review is passed
+        - label: No breaking changes (or properly documented)
+
+  - type: textarea
+    id: estimated-effort
+    attributes:
+      label: ⏱️ Estimated Effort
+      description: How much effort do you think this task will require?
+      placeholder: "Small (< 1 day), Medium (1-3 days), Large (> 3 days), or specific time estimate"

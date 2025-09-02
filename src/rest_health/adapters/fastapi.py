@@ -4,17 +4,31 @@ FastAPI adapter for rest-health library.
 This module provides integration with FastAPI to expose health check endpoints.
 """
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, Any, Union
+
+try:
+    from fastapi import APIRouter, status
+    from fastapi.responses import JSONResponse
+    from pydantic import BaseModel
+except ImportError:
+    raise RuntimeError("FastAPI is not installed. Install it with: pip install fastapi")
 
 if TYPE_CHECKING:
-    from fastapi import APIRouter, Response
-
-from ..core.checker import HealthCheck
+    from ..core.checker import HealthCheck
 
 
-def create_fastapi_healthcheck(
-    health: HealthCheck, path: str = "/health"
-) -> "APIRouter":
+class HealthResponse(BaseModel):
+    """
+    Pydantic model for the health check response.
+    This provides a clear contract for the API.
+    """
+
+    status: str
+    checks: Dict[str, Any]
+
+
+def create_fastapi_healthcheck(health: HealthCheck, path: str = "/health") -> APIRouter:
     """
     Create a FastAPI router with a health check endpoint.
 
@@ -24,33 +38,31 @@ def create_fastapi_healthcheck(
 
     Returns:
         FastAPI APIRouter with the health check endpoint
-
-    Raises:
-        RuntimeError: If FastAPI is not installed
     """
-    try:
-        from fastapi import APIRouter
-    except ImportError:
-        raise RuntimeError(
-            "FastAPI is not installed. Install it with: pip install fastapi"
-        )
-
     router = APIRouter()
 
-    @router.get(path)
-    def health_check() -> "Response":
+    @router.get(
+        path,
+        response_model=HealthResponse,
+        status_code=status.HTTP_200_OK,
+        responses={
+            200: {"description": "Service is healthy", "model": HealthResponse},
+            503: {
+                "description": "Service is unhealthy - one or more health checks failed",
+                "model": HealthResponse,
+            },
+        },
+    )
+    def health_check() -> Union[Dict[str, Any], JSONResponse]:
         """Health check endpoint."""
-        import json
-
         result = health.run()
-        status_code = 200 if result["status"] == "ok" else 503
+        if result["status"] == "ok":
+            return result
 
-        from fastapi import Response
-
-        return Response(
-            content=json.dumps(result),
-            status_code=status_code,
-            media_type="application/json",
+        # When returning a 503 status, you must use a custom JSONResponse
+        # to override the default behavior.
+        return JSONResponse(
+            content=result, status_code=status.HTTP_503_SERVICE_UNAVAILABLE
         )
 
     return router
