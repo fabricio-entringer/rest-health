@@ -16,7 +16,7 @@ class HealthCheck:
     and provides a unified way to execute them and collect their results.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize a new HealthCheck instance."""
         self._checks: Dict[str, Callable[[], bool]] = {}
 

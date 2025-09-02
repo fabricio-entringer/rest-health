@@ -7,7 +7,7 @@ This module provides integration with FastAPI to expose health check endpoints.
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from fastapi import APIRouter
+    from fastapi import APIRouter, Response
 
 from ..core.checker import HealthCheck
 
@@ -38,7 +38,7 @@ def create_fastapi_healthcheck(
     router = APIRouter()
 
     @router.get(path)
-    def health_check():
+    def health_check() -> "Response":
         """Health check endpoint."""
         import json
 
