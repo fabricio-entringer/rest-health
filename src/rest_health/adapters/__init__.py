@@ -1,6 +1,7 @@
-"""Framework adapters for rest-health."""
+"""
+Adapters for different web frameworks.
+"""
 
-# Import adapters conditionally to avoid requiring dependencies
 try:
     from .fastapi import create_fastapi_healthcheck
 

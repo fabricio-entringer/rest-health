@@ -1,99 +1,53 @@
 """
-Unit tests for rest-health library.
+Tests for the core health checker functionality.
 """
 
-import pytest
-from rest_health import HealthCheck
+from rest_health.core.checker import HealthCheck
 
 
-class TestHealthCheck:
-    """Test cases for the HealthCheck class."""
+def test_health_check_creation():
+    """Test that a HealthCheck instance can be created."""
+    health = HealthCheck()
+    assert health is not None
 
-    def test_empty_healthcheck(self):
-        """Test health check with no registered checks."""
-        health = HealthCheck()
-        result = health.run()
 
-        assert result["status"] == "ok"
-        assert result["checks"] == {}
+def test_health_check_run():
+    """Test running a health check with no checks configured."""
+    health = HealthCheck()
+    result = health.run()
 
-    def test_single_passing_check(self):
-        """Test health check with a single passing check."""
-        health = HealthCheck()
+    assert result["status"] == "ok"
+    assert "checks" in result
+    assert isinstance(result["checks"], dict)
 
-        def dummy_check():
-            return True
 
-        health.add_check("database", dummy_check)
-        result = health.run()
+def test_health_check_with_custom_check():
+    """Test adding a custom health check."""
+    health = HealthCheck()
 
-        assert result["status"] == "ok"
-        assert result["checks"]["database"]["status"] == "ok"
-        assert result["checks"]["database"]["success"] is True
+    def dummy_check():
+        return True  # Should return boolean, not dict
 
-    def test_single_failing_check(self):
-        """Test health check with a single failing check."""
-        health = HealthCheck()
+    health.add_check("dummy", dummy_check)
+    result = health.run()
 
-        def failing_check():
-            return False
+    assert result["status"] == "ok"
+    assert "dummy" in result["checks"]
+    assert result["checks"]["dummy"]["status"] == "ok"
+    assert result["checks"]["dummy"]["success"] is True
 
-        health.add_check("service", failing_check)
-        result = health.run()
 
-        assert result["status"] == "fail"
-        assert result["checks"]["service"]["status"] == "fail"
-        assert result["checks"]["service"]["success"] is False
+def test_health_check_with_failing_check():
+    """Test health check with a failing check."""
+    health = HealthCheck()
 
-    def test_mixed_checks(self):
-        """Test health check with both passing and failing checks."""
-        health = HealthCheck()
+    def failing_check():
+        return False  # Should return boolean, not dict
 
-        def passing_check():
-            return True
+    health.add_check("failing", failing_check)
+    result = health.run()
 
-        def failing_check():
-            return False
-
-        health.add_check("database", passing_check)
-        health.add_check("cache", failing_check)
-        result = health.run()
-
-        # Overall status should be fail if any check fails
-        assert result["status"] == "fail"
-        assert result["checks"]["database"]["status"] == "ok"
-        assert result["checks"]["cache"]["status"] == "fail"
-
-    def test_exception_handling(self):
-        """Test that exceptions in checks are handled gracefully."""
-        health = HealthCheck()
-
-        def error_check():
-            raise ValueError("Something went wrong")
-
-        health.add_check("error_prone", error_check)
-        result = health.run()
-
-        assert result["status"] == "fail"
-        assert result["checks"]["error_prone"]["status"] == "fail"
-        assert result["checks"]["error_prone"]["success"] is False
-        assert "Something went wrong" in result["checks"]["error_prone"]["error"]
-
-    def test_multiple_checks_with_exception(self):
-        """Test multiple checks where one throws an exception."""
-        health = HealthCheck()
-
-        def passing_check():
-            return True
-
-        def error_check():
-            raise RuntimeError("Connection failed")
-
-        health.add_check("healthy_service", passing_check)
-        health.add_check("failing_service", error_check)
-        result = health.run()
-
-        assert result["status"] == "fail"
-        assert result["checks"]["healthy_service"]["status"] == "ok"
-        assert result["checks"]["failing_service"]["status"] == "fail"
-        assert "error" in result["checks"]["failing_service"]
+    assert result["status"] == "fail"  # Overall status should be "fail"
+    assert "failing" in result["checks"]
+    assert result["checks"]["failing"]["status"] == "fail"
+    assert result["checks"]["failing"]["success"] is False

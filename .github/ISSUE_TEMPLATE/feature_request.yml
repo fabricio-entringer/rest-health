@@ -1,0 +1,92 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for rest-health
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide detailed information to help us understand your request.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 🚀 Feature Description
+      description: A clear and concise description of the feature you'd like to see added.
+      placeholder: Describe the feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 💡 Why is this needed?
+      description: Explain why this feature would be useful and what problem it solves.
+      placeholder: What problem does this solve or what use case does it enable?
+    validations:
+      required: true
+
+  - type: textarea
+    id: code-example
+    attributes:
+      label: 📝 Code Example (optional)
+      description: Show how you envision the feature being used
+      placeholder: |
+        ```python
+        from rest_health import HealthCheck
+        
+        # Your proposed API usage here...
+        ```
+      render: python
+
+  - type: checkboxes
+    id: framework-compatibility
+    attributes:
+      label: 🌍 Framework Support
+      description: Which frameworks should this feature support?
+      options:
+        - label: Core (framework-agnostic)
+        - label: FastAPI adapter
+        - label: Flask adapter
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 🔍 Additional Context
+      description: Any other details, alternatives considered, or related issues.
+      placeholder: Any additional information...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⏰ Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would be helpful
+        - High - Important for my use case
+        - Critical - Blocking my work
+      default: 1
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: 📋 Implementation Notes
+      description: Any technical details, constraints, or considerations for implementing this feature.
+      placeholder: Technical considerations, constraints, or suggestions...
+
+  - type: input
+    id: related-issues
+    attributes:
+      label: 🔗 Related Issues
+      description: List any related issue numbers (e.g., #123, #456)
+      placeholder: "#123, #456"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 🔍 Additional Context
+      description: Add any other context, screenshots, or examples about the feature request here.
+      placeholder: Any additional information...

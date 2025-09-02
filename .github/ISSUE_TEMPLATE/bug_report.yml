@@ -1,0 +1,136 @@
+name: 🐛 Bug Report
+description: Report a bug to help us improve rest-health
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us resolve the issue.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: What should have happened?
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: A clear and concise description of what actually happened.
+      placeholder: What actually happened?
+    validations:
+      required: false
+
+  - type: textarea
+    id: code-example
+    attributes:
+      label: 📝 Code Example
+      description: Please provide a minimal code example that reproduces the issue
+      placeholder: |
+        ```python
+        from rest_health import HealthCheck
+        
+        health = HealthCheck()
+        # Your code here...
+        ```
+      render: python
+    validations:
+      required: false
+
+  - type: input
+    id: python-version
+    attributes:
+      label: 🐍 Python Version
+      description: What version of Python are you using?
+      placeholder: "3.12"
+    validations:
+      required: true
+
+  - type: input
+    id: rest-health-version
+    attributes:
+      label: 📦 rest-health Version
+      description: What version of rest-health are you using?
+      placeholder: "0.1.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: 🌐 Framework
+      description: Which web framework are you using?
+      options:
+        - Core (no framework adapter)
+        - FastAPI
+        - Flask
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: framework-version
+    attributes:
+      label: 🔧 Framework Version
+      description: What version of the framework are you using? (if applicable)
+      placeholder: "FastAPI 0.104.1 or Flask 2.3.0"
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: 💻 Operating System
+      description: What operating system are you using?
+      options:
+        - Ubuntu
+        - macOS
+        - Windows
+        - Other Linux
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-traceback
+    attributes:
+      label: 📋 Error Details
+      description: Paste the full error traceback here
+      placeholder: Paste the full error traceback here
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 🔍 Additional Context
+      description: Add any other context about the problem here. Screenshots, logs, or related issues can be helpful.
+      placeholder: Any additional information...
